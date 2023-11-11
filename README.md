@@ -12,15 +12,15 @@ The time complexity of the counting sort algorithm is $O(n + k)$, where $k$ is t
 
 Given the data, we can establish a boundary condition for which algorithm will be faster:
 
-$$an \log{n} = k + bn + c$$
+$$\large an \log{n} = k + bn + c$$
 
 Through several linear regressions, we found the coefficients $a$, $b$, and $c$ with $R^2 > 0.999$.
 
-$$2.68 n \log{n} = k + 0.73n - 199$$
+$$\large 2.68 n \log{n} = k + 0.73n - 199$$
 
 If $k < 2.68n \log⁡{n} - 0.73n + 199$ then the counting sort algorithm is faster, and otherwise the merge sort algorithm is faster.
 
-We devided the data into $\sqrt{k}$ buckets, so that the $i$-th bucket would contain data in the range [$i \sqrt{k}$, $(i + 1) \sqrt{k}$]. Next, for each bucket, we figure out which sorting algorithm would be faster. After sorting each bucket, we merge the buckets using the Merge sort algorithm.
+We devided the data into $\sqrt{k}$ buckets, so that the $i$-th bucket would contain data in the range [$i\sqrt{k}$, $(i + 1) \sqrt{k}$]. Next, for each bucket, we figure out which sorting algorithm would be faster. After sorting each bucket, we merge the buckets using the Merge sort algorithm.
 
 ```diff
 We omit the exact results.
