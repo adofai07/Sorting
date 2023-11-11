@@ -21,3 +21,4 @@ if __name__ == "__main__":
     a = RandomizedListGenerator.Int.normal(1000000, 4, 7)
     print(statistics.mean(a))
     print(statistics.stdev(a))
+    
