@@ -71,6 +71,7 @@ def insertion(array, st, ed):
         array[j + 1] = element
     return array
 
+# In-place
 def TimSort(array):
     minrun = find_minrun(10 ** 9) 
   
