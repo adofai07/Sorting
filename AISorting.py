@@ -24,5 +24,4 @@ STDEV = 1
 L = RandomizedListGenerator.Float.normal(N, MEAN, STDEV)
 LL = [None for _ in range(N)]
 
-for i in range(N):
-    print(L[i], model.predict(np.expand_dims(np.array([MEAN, STDEV, L[i]]), axis=0)))
+print(model.predict(np.asarray([np.array([MEAN, STDEV, L[i]]) for i in range(N)])))

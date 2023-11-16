@@ -45,7 +45,7 @@ model.compile(
         ]
 )
 
-DATA = 5_000_000
+DATA = 1_000_000
 EPOCHS = 500
 N = 1000
 MEAN_RANGE = 10000

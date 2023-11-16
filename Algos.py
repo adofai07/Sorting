@@ -54,6 +54,41 @@ def MergeSort(m):
 
     return list(merge(left, right))
 
+def find_minrun(n):
+    r = 0
+    while n >= 32: 
+        r |= n & 1
+        n >>= 1
+    return n + r
+
+def insertion(array, st, ed): 
+    for i in range(st + 1, ed):
+        element = array[i]
+        j = i - 1
+        while element < array[j] and j >= st:
+            array[j + 1] = array[j]
+            j -= 1
+        array[j + 1] = element
+    return array
+
+def Timsort(array):
+    minrun = find_minrun(10 ** 9) 
+  
+    for st in range(0, 10 ** 9, minrun): 
+        ed = min(st + minrun, 10 ** 9) 
+        insertion(array, st, ed) 
+   
+    size = minrun 
+    while size < 10 ** 9: 
+  
+        for left in range(0, 10 ** 9, 2 * size): 
+  
+            mid = min(10 ** 9 - 1, left + size - 1) 
+            right = min((left + 2 * size - 1), (10 ** 9 - 1)) 
+            merge(array, left, mid, right) 
+  
+        size = 2 * size
+
 if __name__ == "__main__":
 	from type import RandomizedListGenerator
 	
