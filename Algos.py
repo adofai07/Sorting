@@ -1,5 +1,6 @@
 from collections import defaultdict
 from heapq import merge
+import math
 
 def _CountingSort(array, mn, mx):
 	count = defaultdict(int)
@@ -89,6 +90,57 @@ def TimSort(array):
             merge(array, left, mid, right) 
   
         size = 2 * size
+
+def mergesort(array, st, ed):
+    if st + 1 == ed: return
+    mid = (st + ed) // 2
+    mergesort(array, st, mid)
+    mergesort(array, mid, ed)
+    merge(array, st, mid, ed)
+
+def counting(array, st, ed): # [st, ed)
+    if st + 1 >= ed: return
+    min_ = 10 ** 5
+    max_ = 1
+    for i in range(st, ed):
+        min_ = min(min_, array[i])
+        max_ = max(max_, array[i])
+    count = [0 for _ in range(min_, max_ + 1)]
+    for i in range(st, ed):
+        count[array[i] - min_] += 1
+    p = st
+    for i in range(0, max_ - min_ + 1):
+        while count[i] > 0:
+            array[p] = i
+            count[i] -= 1
+            p = p + 1
+
+def fast(N, K):
+    if K <= 2.68 * N * math.log10(N) - 0.73 * N + 199:
+    # if K <= 2.52 * N * math.log10(N) - 0.09 * N:
+        return "Count"
+    else:
+        return "Merge"
+
+# In-place
+def Csort(array, st, ed, B):
+    bucket = [[] for _ in range(B+1)]
+    val = math.ceil(10 ** 5 / B)
+    for i in range(st, ed):
+        bucket[array[i] // val].append(array[i])
+    array.clear()
+    for i in range(B):
+        for num in bucket[i]:
+            array.append(num)
+    sst = st
+    eed = st + len(bucket[0])
+    for i in range(B):
+        if len(bucket[i]) >= 2:
+            if fast(len(bucket[i]), val) == "Count":
+                counting(array, sst, eed)
+            else: mergesort(array, sst, eed)
+        sst = eed
+        if i < B-1: eed += len(bucket[i+1])
 
 if __name__ == "__main__":
 	from type import RandomizedListGenerator

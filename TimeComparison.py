@@ -32,8 +32,8 @@ def FasterSort(N: int, K: int, f1: callable, f2: callable) -> callable:
 def find_K_for_N(N: int, f1: callable, f2: callable) -> int:
     K_range = [1, N ** 2 // 10]
 
-    if FasterSort(N, 1, f1, f2) == f2:
-        f1, f2 = f2, f1
+    # if FasterSort(N, 1, f1, f2) == f2:
+    #     f1, f2 = f2, f1
     
     while True:
         mid_K = sum(K_range) // 2
@@ -60,4 +60,4 @@ def find_boundaries(f1: callable, f2: callable):
     return (N_list, K_list)
 
 if __name__ == "__main__":
-    print(find_K_for_N(1000, CountingSort, QuickSort))
+    print(find_boundaries(CountingSort, QuickSort))
