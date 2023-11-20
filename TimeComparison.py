@@ -60,4 +60,4 @@ def find_boundaries(f1: callable, f2: callable):
     return (N_list, K_list)
 
 if __name__ == "__main__":
-    print(find_boundaries(CountingSort, QuickSort))
+    print(find_boundaries(MergeSort, QuickSort))
