@@ -1,6 +1,13 @@
 from collections import defaultdict
 from heapq import merge
 import math
+import time
+import tqdm
+from type import RandomizedListGenerator
+import sys
+
+sys.setrecursionlimit(2147483647)
+n = 10 ** 5
 
 def _CountingSort(array, mn, mx):
 	count = defaultdict(int)
@@ -18,29 +25,42 @@ def _CountingSort(array, mn, mx):
 def CountingSort(arr):
 	return _CountingSort(arr, min(arr), max(arr))
 
-def QuickSort(arr):
+def _QuickSort(arr, st, ed):
     less = []
     pivotList = []
     more = []
 
-    if len(arr) <= 1:
-        return arr
+    if ed - st <= 1:
+        return
     
     else:
-        pivot = arr[0]
+        pivot = arr[st]
 
-        for i in arr:
-            if i < pivot:
-                less.append(i)
-            elif i > pivot:
-                more.append(i)
+        for i in range(st, ed):
+            if arr[i] < pivot:
+                less.append(arr[i])
+            elif arr[i] > pivot:
+                more.append(arr[i])
             else:
-                pivotList.append(i)
+                pivotList.append(arr[i])
 
-        less = QuickSort(less)
-        more = QuickSort(more)
+        p = st
+        for val in less:
+            arr[p] = val
+            p += 1
+        _QuickSort(arr, st, p)
+        for val in pivotList:
+            arr[p] = val
+            p += 1
+        q = p
+        for val in more:
+            arr[p] = val
+            p += 1
+        _QuickSort(arr, q, ed)
 
-        return less + pivotList + more
+def QuickSort(arr):
+	return _QuickSort(arr, 0, len(arr))
+
 
 def MergeSort(m):
     if len(m) <= 1:
@@ -72,22 +92,21 @@ def insertion(array, st, ed):
         array[j + 1] = element
     return array
 
-# In-place
 def TimSort(array):
-    minrun = find_minrun(10 ** 9) 
+    minrun = find_minrun(n) 
   
-    for st in range(0, 10 ** 9, minrun): 
-        ed = min(st + minrun, 10 ** 9) 
+    for st in range(0, n, minrun): 
+        ed = min(st + minrun, n) 
         insertion(array, st, ed) 
    
     size = minrun 
-    while size < 10 ** 9: 
+    while size < n: 
   
-        for left in range(0, 10 ** 9, 2 * size): 
+        for left in range(0, n, 2 * size): 
   
-            mid = min(10 ** 9 - 1, left + size - 1) 
-            right = min((left + 2 * size - 1), (10 ** 9 - 1)) 
-            merge(array, left, mid, right) 
+            mid = min(n - 1, left + size - 1) 
+            right = min((left + 2 * size - 1), (n - 1)) 
+            array[left:right] = list(merge(array[left:mid], array[mid:right]) )
   
         size = 2 * size
 
@@ -100,11 +119,8 @@ def mergesort(array, st, ed):
 
 def counting(array, st, ed): # [st, ed)
     if st + 1 >= ed: return
-    min_ = 10 ** 5
-    max_ = 1
-    for i in range(st, ed):
-        min_ = min(min_, array[i])
-        max_ = max(max_, array[i])
+    min_ = min(array[st:ed])
+    max_ = max(array[st:ed])
     count = [0 for _ in range(min_, max_ + 1)]
     for i in range(st, ed):
         count[array[i] - min_] += 1
@@ -115,32 +131,77 @@ def counting(array, st, ed): # [st, ed)
             count[i] -= 1
             p = p + 1
 
-def fast(N, K):
-    if K <= 2.68 * N * math.log10(N) - 0.73 * N + 199:
-    # if K <= 2.52 * N * math.log10(N) - 0.09 * N:
-        return "Count"
-    else:
-        return "Merge"
+def RadixSort(arr):
+    r = 16
+    n = len(arr)
+    min_ = min(arr)
+    max_ = max(arr)
+    if min_ == max_: return
+    d = math.log(max_ - min_) / math.log(r)
+    for i in range(int(d) + 1):
+        cnt = [[] for _ in range(r)]
+        res = []
+        for j in range(n):
+            t = ((arr[j] - min_) >> (4*i)) & (r-1)
+            cnt[t].append(j)
+        for m in range(r):
+            for j in range(len(cnt[m])):
+                res.append(arr[cnt[m][j]])
+        arr = res[:]
 
-# In-place
-def Csort(array, st, ed, B):
-    bucket = [[] for _ in range(B+1)]
-    val = math.ceil(10 ** 5 / B)
-    for i in range(st, ed):
-        bucket[array[i] // val].append(array[i])
-    array.clear()
-    for i in range(B):
-        for num in bucket[i]:
-            array.append(num)
-    sst = st
-    eed = st + len(bucket[0])
-    for i in range(B):
-        if len(bucket[i]) >= 2:
-            if fast(len(bucket[i]), val) == "Count":
-                counting(array, sst, eed)
-            else: mergesort(array, sst, eed)
-        sst = eed
-        if i < B-1: eed += len(bucket[i+1])
+def RadixIndex(arr, manti):
+    r = 16
+    n = len(arr)
+    min_ = min(manti)
+    max_ = max(manti)
+    if min_ == max_: return arr
+    d = math.log(max_ - min_) / math.log(r)
+    for i in range(int(d) + 1):
+        cnt = [[] for _ in range(r)]
+        cnt2 = [[] for _ in range(r)]
+        res = []
+        res2 = []
+        for j in range(n):
+            t = ((manti[j] - min_) >> (4*i)) & (r-1)
+            cnt[t].append(arr[j])
+            cnt2[t].append(manti[j])
+        for m in range(r):
+            for j in range(len(cnt[m])):
+                res.append(cnt[m][j])
+            for j in range(len(cnt2[m])):
+                res2.append(cnt2[m][j])
+        arr = res[:]
+        manti = res2[:]
+    return arr
+
+# 64bit IEEE 754 standard floating-point arithmetic
+def FloatRadixSort(arr):
+    n = len(arr)
+    min_ = min(arr)
+    max_ = max(arr)
+
+    expon = arr[:]
+    manti = arr[:]
+    for i in range(len(arr)):
+        e = math.floor(math.log2(arr[i] - min_ + 1))
+        m = int((arr[i] - min_ + 1) / (2**e) * (2**52))
+        expon[i] = e
+        manti[i] = m
+
+    d = max(expon)
+    cnt = [[] for _ in range(d + 1)]
+    res = []
+    for j in range(n):
+        cnt[expon[j]].append(j)
+    for m in range(d + 1):
+        if len(cnt[m]) == 0: continue
+        part = []
+        for j in range(len(cnt[m])):
+            part.append(manti[cnt[m][j]])
+        cnt[m] = RadixIndex(cnt[m], part)
+        for j in range(len(cnt[m])):
+            res.append(arr[cnt[m][j]])
+    arr = res[:]
 
 if __name__ == "__main__":
 	from type import RandomizedListGenerator
