@@ -29,9 +29,9 @@ Radix Sort
 
 if __name__ == "__main__":
     T = time.time()
-    N = 10
+    N = 40
     
-    F = [CountingSort, MergeSort, QuickSort, TimSort, RadixSort, FloatRadixSort]
+    F = [QuickSort, TimSort, RadixSort, FloatRadixSort, CountingSort, MergeSort]
     
     for f in tqdm.tqdm(F, position=0, leave=False):    
         # f = MergeSort

@@ -39,7 +39,7 @@ int CountingSort(int64_t *data, int64_t a, int64_t b, size_t len)
     if (b < a)
         return 2;
 
-    size_t *count = malloc((b - a + 1) * sizeof(*count));
+    size_t *count = (size_t *) malloc((b - a + 1) * sizeof(*count));
     int64_t ind;
 
     if (!count)
