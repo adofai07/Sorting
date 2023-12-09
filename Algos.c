@@ -1,11 +1,16 @@
-#include <bits/stdc++.h>
+// #include <bits/stdc++.h>
+#include <stdio.h>
+#include <iso646.h>
+#include <malloc.h>
+#include <time.h>
+
 #include "xoshiro256starstar.h"
 
 #define DATA_SIZE 100000000
 #define DATA_MIN 0
 #define DATA_MAX 1000000
 
-using namespace std;
+// using namespace std;
 
 int64_t arr[DATA_SIZE];
 
@@ -102,7 +107,7 @@ int main() {
 
     printf("Data size: %d, Data range: [%d, %d]\n", DATA_SIZE, DATA_MIN, DATA_MAX);
 
-    while (--TRIES) {
+    while (TRIES--) {
         clock_t start_time, end_time;
 
         for (size_t i = 0; i < DATA_SIZE; i++) {

@@ -29,15 +29,15 @@ Radix Sort
 
 if __name__ == "__main__":
     T = time.time()
-    N = 40
+    N = 5
     
-    F = [QuickSort, TimSort, RadixSort, FloatRadixSort, CountingSort, MergeSort]
+    F = [TimSort, RadixSort, FloatRadixSort, CountingSort, MergeSort, QuickSort]
     
     for f in tqdm.tqdm(F, position=0, leave=False):    
         # f = MergeSort
         
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        sys.stdout = open(FR"{dir_path}\Output-{f.__name__}.txt", "w+")
+        sys.stdout = open(FR"{dir_path}\Output-{f.__name__}-{N}.txt", "w+")
 
         N_K_LIST = [
             (i * 100000, j * 100000)
