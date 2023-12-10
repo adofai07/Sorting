@@ -1,28 +1,16 @@
-#include "Algos.hpp"
 #include <bits/stdc++.h>
 #include "xoshiro256starstar.h"
-#include <windows.h>
+
+#define DATA_SIZE 10
+#define DATA_MIN 0
+#define DATA_MAX 1000000
 
 using namespace std;
 
-int64_t GetFreq(void) {
-    LARGE_INTEGER freq;
+int64_t arr[DATA_SIZE];
 
-    if (!QueryPerformanceFrequency(&freq))
-        return 0;
-    
-    return freq.QuadPart;
-}
 
-int64_t GetTicks(void) {
-    LARGE_INTEGER ticks;
-
-    if (!QueryPerformanceCounter(&ticks))
-        return 0;
-
-    return ticks.QuadPart;
-}
-
+int InsertionSort(int64_t *arr, int st, int ed);
 
 int CountingSort(int64_t *arr, int64_t data_size) {
     int64_t _min = 0;
@@ -282,6 +270,46 @@ int TimSort(int64_t *arr, int64_t data_size) {
         }
         sz *= 2;
     }
+
+    return 0;
+}
+
+int main() {
+    size_t TRIES = 1;
+    set_seed();
+
+    printf("Data size: %d, Data range: [%d, %d]\n", DATA_SIZE, DATA_MIN, DATA_MAX);
+
+    while (TRIES--) {
+        clock_t start_time, end_time;
+
+        for (size_t i = 0; i < DATA_SIZE; i++) {
+            arr[i] = next_r(DATA_MIN, DATA_MAX);
+        }
+
+        for (size_t i = 0; i < DATA_SIZE; i++) {
+            cout << arr[i] << ' ';
+        } cout << '\n';
+
+        // Sorting fuction here
+        start_time = clock();
+        // CountingSort(arr, DATA_SIZE);
+        MergeSort(arr, DATA_SIZE);
+        // QuickSort(arr, DATA_SIZE);
+        // RandomizedQuickSort(arr, DATA_SIZE);
+        // RadixSort(arr, DATA_SIZE);
+        // TimSort(arr, DATA_SIZE);
+        end_time = clock();
+
+        for (size_t i = 0; i < DATA_SIZE; i++) {
+            cout << arr[i] << ' ';
+        } cout << '\n';
+        
+        printf("Took time %.03lf\n", ((double) end_time - (double) start_time) / CLOCKS_PER_SEC);
+
+    }
+
+    // cin >> TRIES;
 
     return 0;
 }

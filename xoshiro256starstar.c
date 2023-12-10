@@ -44,7 +44,7 @@ uint64_t next(void) {
 	return result;
 }
 
-
+// [a, b)
 int64_t next_r(int64_t a, int64_t b) { return a + ((int64_t) (next() >> 1)) % (b - a); }
 
 double next_f(void) { return (next() >> 11) * 0x1.0p-53; }

@@ -29,9 +29,9 @@ Radix Sort
 
 if __name__ == "__main__":
     T = time.time()
-    N = 5
+    N = 40
     
-    F = [TimSort, RadixSort, FloatRadixSort, CountingSort, MergeSort, QuickSort]
+    F = [MergeSort, CountingSort, QuickSort, RadixSort, FloatRadixSort, TimSort]
     
     for f in tqdm.tqdm(F, position=0, leave=False):    
         # f = MergeSort
@@ -44,6 +44,11 @@ if __name__ == "__main__":
             for i in range(1, 11)
             for j in range(1, 11)
             for _ in range(N)
+        ] + [
+            (i * 10000, j * 10000)
+            for i in range(1, 11)
+            for j in range(1, 11)
+            for _ in range(N)            
         ]
         
         random.shuffle(N_K_LIST)
@@ -74,10 +79,16 @@ if __name__ == "__main__":
 
         for i in range(1, 11):
             for j in range(1, 11):
+                n = i * 10000
+                m = j * 10000
+                
+                print(F"{n} {m} {N_K_TIME_LIST[F'{n}/{m}'] / N}")
+
+        for i in range(1, 11):
+            for j in range(1, 11):
                 n = i * 100000
                 m = j * 100000
                 
-                # print(F"N = {n}, K = {m}, T = {N_K_TIME_LIST[F'{n}/{m}'] / N}")
                 print(F"{n} {m} {N_K_TIME_LIST[F'{n}/{m}'] / N}")
                 
         # print(N_K_TIME_LIST)
