@@ -300,7 +300,7 @@ int main() {
     // cout << IntegerLength(1000) << ' ' << IntegerLength(2887640) << '\n';
     size_t TRIES = 2;
     set_seed();
-    sortfn_t x[] = {CountingSort, RandQS};
+    sortfn_t x[] = {CountingSort, RandomizedQuickSort};
 
     vector<int64_t> N_LIST;
     vector<int64_t> K_LIST;

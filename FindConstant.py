@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
         for (n, k) in tqdm.tqdm(N_K_LIST, position=1, leave=False):
             cnt += 1
-            print(F"{cnt} / {100 * N}")
+            print(F"{cnt} / {200 * N}")
             print(F"{(n, k) = }")
 
             l = RandomizedListGenerator.Int.linear(n, 1, k)
