@@ -7,6 +7,7 @@
 #define DATA_MIN 0
 #define DATA_MAX 100000
 #define ARR_LEN(x) (sizeof(x) / sizeof(*x))
+#define MAX_THREADS 8
 
 typedef int (*sortfn_t)(int64_t *, int64_t);
 
@@ -353,22 +354,28 @@ int Csort(int64_t *arr, int64_t data_size) {
 
     // printf("[04]> ");
 
-    int st = 0;
-    int ed = st + bucket[0].size();
+    int *cumsum = (int *) malloc((b + 1) * sizeof(*cumsum));
 
-    for (int i = 0; i < b; i++) {
-        if (bucket[i].size() >= 2) {
-            if (fast(bucket[i].size(), val)) {
-                // _RadixSort(arr, st, ed);
-                CountingSort(arr + st * sizeof(*arr), ed - st);
-            } else {
-                // _MergeSort(arr, st, ed);
-                QuickSort(arr + st * sizeof(*arr), ed - st);
+    cumsum[0] = 0;
+
+    for (int i = 1; i <= b; i++) {
+        cumsum[i] = cumsum[i - 1] + bucket[i - 1].size();
+    }
+
+    #pragma omp parallel for
+        for (int i = 0; i < b; i++) {
+            if (bucket[i].size() >= 2) {
+                if (fast(bucket[i].size(), val)) {
+                    // _RadixSort(arr, st, ed);
+                    CountingSort(arr + cumsum[i] * sizeof(*arr), cumsum[i + 1] - cumsum[i]);
+                } else {
+                    // _MergeSort(arr, st, ed);
+                    QuickSort(arr + cumsum[i] * sizeof(*arr), cumsum[i + 1] - cumsum[i]);
+                }
             }
         }
-        st = ed;
-        if (i < b - 1) ed += bucket[i + 1].size();
-    }
+
+    printf("B%d ", b);
 
     for (int i = 0; i < data_size; i++) arr[i] += _min;
 
@@ -379,6 +386,8 @@ int64_t arr[100000100];
 
 int main() {
     // ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    set_seed();
+    omp_set_num_threads(MAX_THREADS);
 
     int64_t TRIES = 10;
 
