@@ -57,7 +57,7 @@ void set_seed(void) {
 	s[3] = 438648104582ull;
 
 	
-	for (int i = 0; i < 32; i++)
+	for (int i = 0; i < 128; i++)
 		next();
 }
 

@@ -305,7 +305,7 @@ int FormatNumber(int64_t n) {
 }
 
 bool fast(int64_t data_size, int64_t data_range) {
-    if (data_range < 1.70928784082079 * data_size * log(data_size) + 5.3980026568648 * data_size + 1688073.6770364) {
+    if (data_range < 1.93880559607368 * data_size * log(data_size) - 11.0097936869354 * data_size + 1039165.71004102) {
         return true;
     } else {
         return false;
@@ -314,7 +314,8 @@ bool fast(int64_t data_size, int64_t data_range) {
     return true;
 }
 
-int Csort(int64_t *arr, int64_t data_size) {
+double Csort(int64_t *arr, int64_t data_size, int b) {
+    int64_t start_time = GetTicks();
 
     int64_t _min = 0;
     int64_t _max = 0;
@@ -334,54 +335,63 @@ int Csort(int64_t *arr, int64_t data_size) {
 
     // printf("[01]> ");
 
-    int b = min(data_size, (int64_t)(sqrt(_max - _min) * 0.1)) + 1;
-    vector<int64_t> bucket[b];
+    // int b = min(data_size, (int64_t)(pow(_max - _min, 0.5) * 0.01)) + 1;
+    // int b = min(data_size, (int64_t)(pow(_max - _min, 0.6) * 0.002)) + 1;
+    // int b = min(data_size, (int64_t)(pow(_max - _min, 0.7) * 0.0004)) + 1;
+    
+    // int b = (int) (pow(data_size, 0.5) * (pow(_max - _min, 0.4) * 0.0001)) + 1;
+
+    int64_t *out = (int64_t *) malloc(sizeof(*out) * data_size);
+    int64_t *inds = (int64_t *) calloc(b + 1, sizeof(*inds));
 
     // printf("[02]> ");
 
     int64_t val = ceil((_max - _min + 1) / (double)b);
-    for (int i = 0; i < data_size; i++) {
-        bucket[arr[i] / val].push_back(arr[i]);
-    }
 
-    // printf("[03]> ");
-
-    int r = -1;
-    for (int i = 0; i < b; i++) {
-        for (int j = 0; j < bucket[i].size(); j++) {
-            arr[++r] = bucket[i][j];
+    /* count numbers for each bin */
+    #pragma omp parallel for
+        for (int i = 0; i < data_size; i++) {
+            #pragma omp atomic
+            inds[(arr[i] / val) + 1]++;
         }
+
+    /* cumulatively sum */
+    for (int i = 1; i < b; i++)
+        inds[i] += inds[i - 1];
+
+    /* store the data */
+    for (int i = 0; i < data_size; i++) {
+        out[inds[arr[i] / val]] = arr[i];
+        inds[arr[i] / val]++;
     }
 
-    // printf("[04]> ");
-
-    int *cumsum = (int *) malloc((b + 1) * sizeof(*cumsum));
-
-    cumsum[0] = 0;
-
-    for (int i = 1; i <= b; i++) {
-        cumsum[i] = cumsum[i - 1] + bucket[i - 1].size();
-    }
 
     #pragma omp parallel for
         for (int i = 0; i < b; i++) {
-            if (cumsum[i + 1] - cumsum[i] >= 2) {
-                if (fast(cumsum[i + 1] - cumsum[i], val)) {
-                    // _RadixSort(arr, st, ed);
-                    CountingSort(arr + cumsum[i] * sizeof(*arr), cumsum[i + 1] - cumsum[i]);
-                } else {
-                    // _MergeSort(arr, st, ed);
-                    QuickSort(arr + cumsum[i] * sizeof(*arr), cumsum[i + 1] - cumsum[i]);
-                }
+            const int prev = (i == 0 ? 0 : inds[i - 1]);
+            const int bucket_n = inds[i] - prev;
+            if (fast(bucket_n, val)) {
+                // _RadixSort(arr, st, ed);
+                CountingSort(out + prev, bucket_n);
+            } else {
+                // _MergeSort(arr, st, ed);
+                MergeSort(out + prev, bucket_n);
             }
         }
 
-    printf("B%d ", b);
+    // printf("B%d ", b);
 
     #pragma omp parallel for
-        for (int i = 0; i < data_size; i++) arr[i] += _min;
+        for (int i = 0; i < data_size; i++) {
+            arr[i] = (out[i] + _min);
+        }
 
-    return 0;
+    free(out);
+    free(inds);
+
+    int64_t end_time = GetTicks();
+
+    return (double) (end_time - start_time) / GetFreq();
 }
 
 int64_t arr[100000100];
@@ -391,44 +401,59 @@ int main() {
     set_seed();
     omp_set_num_threads(MAX_THREADS);
 
-    int64_t TRIES = 10;
+    int64_t TRIES = 50;
 
     int64_t start_ticks, end_ticks;
-    sortfn_t F[4] = {Csort, CountingSort, MergeSort, QuickSort};
-    double times[4] = { 0.0, 0.0, 0.0, 0.0 };
 
-    for (int i = 7; i < 9; i++) for (int j = 8; j < 10; j++) {
-        int64_t n = pow(10, i);
-        int64_t k = pow(10, j);
+    for (int i2 = 6; i2 < 8; i2++) {
+        for (int i1 = 4; i1 < 8; i1++) {
+            for (int j2 = 4; j2 < 8; j2++) {
+                for (int j1 = 4; j1 < 8; j1++) {
+                    int64_t n = i1 * pow(10, i2);
+                    int64_t k = j1 * pow(10, j2);
+                    int64_t min_time = 0;
+                    int64_t min_b = 1;
+                    int64_t total_time = 0;
+                    int b;
 
-        times[0] = 0.0;
-        times[1] = 0.0;
-        times[2] = 0.0;
-        times[3] = 0.0;
-        // printf("%lld %lld ", n, k);
+                    for (b = 1; ; b++) {
+                        total_time = 0;
+                        for (int i3 = 0; i3 < TRIES; i3++) {
+                            for (int i = 0; i < n; i++) {
+                                arr[i] = next_r(0, k);
+                            }
 
-        for (int t = 1; t <= TRIES; t++) {
-            printf("(%03d / %03d) 1e%d 1e%d ", t, TRIES, FormatNumber(n), FormatNumber(k));
+                            int64_t st = GetTicks();
+                            Csort(arr, n, b);
+                            total_time += GetTicks() - st;
 
-            for (int f = 0; f < 4; f++) {
-                // int64_t arr[n];
+                            printf("%de%d, %de%d, b = %d (%lld ticks), min_time = %lld at %d     \r", i1, i2, j1, j2, b, total_time, min_time, min_b);
+                        }
 
-                for (int j = 0; j < n; j++) {
-                    arr[j] = next_r(0, k);
+                        
+                        if (b == 1) {
+                            min_time = total_time;
+                        } else {
+                            if (min_time < total_time) {
+                                if (min_time * 5 < total_time * 4) {
+                                    break;
+                                }
+                            } else {
+                                min_time = total_time;
+                                min_b = b;
+                            }
+                        }
+
+                        // printf("%de%d, %de%d, b = %d, total_time = %lld, min_time = %lld\n", i1, i2, j1, j2, b, total_time, min_time);
+                    }
+
+                    // b--;
+
+                    if (min_b > 1) {
+                        printf("%de%d %de%d %d                                                            \n", i1, i2, j1, j2, min_b);
+                    }
                 }
-
-                // printf("[05]> ");
-
-                start_ticks = GetTicks();
-                F[f](arr, n);
-                end_ticks = GetTicks();
-
-                times[f] += (double) (end_ticks - start_ticks) / GetFreq();
-
-                printf("%.03lf ", times[f] / t);
             }
-            printf("\r");
         }
-        printf("\n");
     }
 }

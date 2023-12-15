@@ -334,52 +334,56 @@ int Csort(int64_t *arr, int64_t data_size) {
 
     // printf("[01]> ");
 
-    int b = min(data_size, (int64_t)(sqrt(_max - _min) * 0.1)) + 1;
-    vector<int64_t> bucket[b];
+    // int b = min(data_size, (int64_t)(sqrt(_max - _min) * 0.06)) + 1;
+    int b = (int) (pow(data_size, 0.5) * (pow(_max - _min, 0.4) * 0.0001)) + 1;
+    
+    int64_t *out = (int64_t *) malloc(sizeof(*out) * data_size);
+    int64_t *inds = (int64_t *) calloc(b + 1, sizeof(*inds));
 
     // printf("[02]> ");
 
     int64_t val = ceil((_max - _min + 1) / (double)b);
-    for (int i = 0; i < data_size; i++) {
-        bucket[arr[i] / val].push_back(arr[i]);
-    }
 
-    // printf("[03]> ");
-
-    int r = -1;
-    for (int i = 0; i < b; i++) {
-        for (int j = 0; j < bucket[i].size(); j++) {
-            arr[++r] = bucket[i][j];
+    /* count numbers for each bin */
+    #pragma omp parallel for
+        for (int i = 0; i < data_size; i++) {
+            #pragma omp atomic
+            inds[(arr[i] / val) + 1]++;
         }
+
+    /* cumulatively sum */
+    for (int i = 1; i < b; i++)
+        inds[i] += inds[i - 1];
+
+    /* store the data */
+    for (int i = 0; i < data_size; i++) {
+        out[inds[arr[i] / val]] = arr[i];
+        inds[arr[i] / val]++;
     }
 
-    // printf("[04]> ");
-
-    int *cumsum = (int *) malloc((b + 1) * sizeof(*cumsum));
-
-    cumsum[0] = 0;
-
-    for (int i = 1; i <= b; i++) {
-        cumsum[i] = cumsum[i - 1] + bucket[i - 1].size();
-    }
 
     #pragma omp parallel for
         for (int i = 0; i < b; i++) {
-            if (cumsum[i + 1] - cumsum[i] >= 2) {
-                if (fast(cumsum[i + 1] - cumsum[i], val)) {
-                    // _RadixSort(arr, st, ed);
-                    CountingSort(arr + cumsum[i] * sizeof(*arr), cumsum[i + 1] - cumsum[i]);
-                } else {
-                    // _MergeSort(arr, st, ed);
-                    QuickSort(arr + cumsum[i] * sizeof(*arr), cumsum[i + 1] - cumsum[i]);
-                }
+            const int prev = (i == 0 ? 0 : inds[i - 1]);
+            const int bucket_n = inds[i] - prev;
+            if (fast(bucket_n, val)) {
+                // _RadixSort(arr, st, ed);
+                CountingSort(out + prev, bucket_n);
+            } else {
+                // _MergeSort(arr, st, ed);
+                QuickSort(out + prev, bucket_n);
             }
         }
 
     printf("B%d ", b);
 
     #pragma omp parallel for
-        for (int i = 0; i < data_size; i++) arr[i] += _min;
+        for (int i = 0; i < data_size; i++) {
+            arr[i] = (out[i] + _min);
+        }
+
+    free(out);
+    free(inds);
 
     return 0;
 }
