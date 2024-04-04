@@ -435,7 +435,7 @@ int main() {
                             min_time = total_time;
                         } else {
                             if (min_time < total_time) {
-                                if (min_time * 5 < total_time * 4) {
+                                if (min_time * 8 < total_time * 7 and b > min_b + 30) {
                                     break;
                                 }
                             } else {

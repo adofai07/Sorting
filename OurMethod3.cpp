@@ -126,6 +126,11 @@ int MergeSort(int64_t *arr, int64_t data_size) {
 int QuickSort(int64_t *arr, int64_t data_size) {
     if (data_size < 2) return 0;
 
+    if (data_size < 16) {
+        InsertionSort(arr, 0, data_size);
+        return 0;
+    }
+
     int64_t pivot = arr[data_size / 2];
     int64_t i, j;
 
